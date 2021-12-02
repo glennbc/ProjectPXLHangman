@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Image  x:Name="Hangman" Margin="10" Width="180" Source="1.png"></Image>
+       
+
         <StackPanel Width="400" HorizontalAlignment="Left">
             <WrapPanel Margin="20" Height="250" VerticalAlignment="Center" >
                 <Label Margin="10" Content="Geef een geheim woord in" x:Name="LblText" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
@@ -18,7 +19,7 @@
         </StackPanel>
 
         <StackPanel>
-           
+            <Image  x:Name="Hangman" Margin="10" Width="180" Source="Assets/1.jpg"></Image>
         </StackPanel>
           
 
@@ -30,6 +31,7 @@
                 <Button Width="200" Height="100" Margin="10" x:Name="BtnRaad" Content="Raad" Click="BtnRaad_Click"/>
                 <Button Width="200" Height="100" Margin="10" x:Name="BtnNieuw" Content="Nieuw spel" Click="BtnNieuw_Click"></Button>
                 <Button Width="200" Height="100" Margin="10" x:Name="BtnVerberg" Content="Verberg woord" Click="BtnVerberg_Click"></Button>
+                <Label x:Name="Lblmasking" Content="test"></Label>
             </WrapPanel>
         </StackPanel>
     </Grid>

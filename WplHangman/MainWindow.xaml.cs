@@ -26,6 +26,7 @@ namespace WplHangman
             InitializeComponent();
             HideObject(BtnRaad);
             HideObject(BtnNieuw);
+            SetImage();
            
         }
 
@@ -46,6 +47,7 @@ namespace WplHangman
         String fout = "";
         String correct = "";
         int levens = 10;
+        
 
 
         //Indien men fout heeft geraden
@@ -55,7 +57,7 @@ namespace WplHangman
             levens--;
             PrintLbl();
             TxtInput.Clear();
-            SetImage();
+           
         }
 
         //Indien men Verloren heeft
@@ -83,11 +85,11 @@ namespace WplHangman
         {
 
 
-            Uri url = new Uri($"{levens}.png",UriKind.Relative);
+            Uri url = new Uri($"Assets/{levens}.png",UriKind.Relative);
             //IMG aanmaken als een bitmap
             BitmapImage bitmap = new BitmapImage(url);
             // bitmap toevoegen aan WPF
-          
+            Hangman.Source = bitmap;
 
 
         }
@@ -100,6 +102,7 @@ namespace WplHangman
             correct = "";
             levens = 10;
             LblText.Content = "Gelieven een woord in te geven:";
+            masking = "";
         }
 
         //Lbl printen
@@ -140,6 +143,7 @@ namespace WplHangman
         {
             SetImage();
             TxtInput.Focus();
+            
 
             if (levens > 1)
             {
@@ -148,11 +152,13 @@ namespace WplHangman
                     if (woord.Contains(TxtInput.Text.ToLower()))
                     {
                         correct += TxtInput.Text.ToLower();
+                       
                     }
                     else
                     {
                         fout += TxtInput.Text.ToLower();
                         Fout();
+                        
                         
                     }
                     if (ControleWoord() )
@@ -185,6 +191,8 @@ namespace WplHangman
 
 
         }
+
+       
 
 
 
