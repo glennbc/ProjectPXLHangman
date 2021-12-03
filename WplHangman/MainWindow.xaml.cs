@@ -144,7 +144,7 @@ namespace WplHangman
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
             masking = new string[woord.Length];
-            SetImage();
+            
             TxtInput.Focus();
             
 
@@ -189,9 +189,10 @@ namespace WplHangman
                     }
                     else
                     {
+                        Masking();
                         Fout();
                         MessageBox.Show("Fout geraden\nHelaas Pindakaas.");
-                        Masking();
+                        
                     }
                 }
             }
@@ -206,7 +207,7 @@ namespace WplHangman
       
         private void Masking()
         {
-            
+            SetImage();
             int ControleWoord = 0;
             FillMasking();
             for (int i = 0; i < woord.Length; i++)
