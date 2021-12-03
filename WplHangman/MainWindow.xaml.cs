@@ -93,7 +93,7 @@ namespace WplHangman
 
 
         }
-
+         
         //alles resetten
         private void Reset()
         {
