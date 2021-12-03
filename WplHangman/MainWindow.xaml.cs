@@ -47,7 +47,7 @@ namespace WplHangman
         String fout = "";
         String correct = "";
         int levens = 10;
-        
+        string[] masking;
 
 
         //Indien men fout heeft geraden
@@ -101,8 +101,9 @@ namespace WplHangman
             fout = "";
             correct = "";
             levens = 10;
-            LblText.Content = "Gelieven een woord in te geven:";
-            masking = "";
+            LblText.Content = "Gelieven een woord of een letter in te geven:";
+
+            
         }
 
         //Lbl printen
@@ -112,6 +113,7 @@ namespace WplHangman
             LblText.Content += $"U heeft op dit moment {levens} Leven(s)\n\n";
             LblText.Content += $"Correct gerade letters: {correct}\n";
             LblText.Content += $"Fout gerade letters: {fout}";
+            Lblmasking.Content = string.Join("", masking);
         }
 
 
@@ -141,6 +143,7 @@ namespace WplHangman
         //Event als men op Raad knop klikt
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
+            masking = new string[woord.Length];
             SetImage();
             TxtInput.Focus();
             
@@ -152,21 +155,26 @@ namespace WplHangman
                     if (woord.Contains(TxtInput.Text.ToLower()))
                     {
                         correct += TxtInput.Text.ToLower();
-                       
+                        Masking();
+
                     }
                     else
                     {
                         fout += TxtInput.Text.ToLower();
                         Fout();
-                        
-                        
+                        Masking();
+
+
                     }
                     if (ControleWoord() )
                     {
+                        Masking();
                         Gewonnen();
+                       
                     }
                     else
                     {
+                        Masking();
                         PrintLbl();
                         TxtInput.Clear();                    
                     }
@@ -175,12 +183,15 @@ namespace WplHangman
                 {
                     if (TxtInput.Text.ToLower() == woord)
                     {
+                        Masking();
                         Gewonnen();
+                      
                     }
                     else
                     {
                         Fout();
-                        MessageBox.Show("Fout geraden\nHelaas Pindakaas.");                       
+                        MessageBox.Show("Fout geraden\nHelaas Pindakaas.");
+                        Masking();
                     }
                 }
             }
@@ -191,8 +202,38 @@ namespace WplHangman
 
 
         }
-
        
+      
+        private void Masking()
+        {
+            
+            int ControleWoord = 0;
+            FillMasking();
+            for (int i = 0; i < woord.Length; i++)
+            {
+                
+                if (correct.Contains(woord.Substring(i, 1)))
+                {    //Letter per letter kijken als deze in correct zit
+
+                    masking[i] = woord.Substring(i, 1);
+                    ControleWoord++;
+                                                                  
+                                                             
+                                                              
+                }
+                
+            }
+           
+        }
+
+        private void FillMasking()
+        {
+         
+            for (int i = 0; i < woord.Length; i++)
+            {
+                masking[i] = "*";
+            }
+        }
 
 
 
