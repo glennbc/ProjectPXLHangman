@@ -6,7 +6,26 @@
         xmlns:local="clr-namespace:WplHangman"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
+
+
+
+
+
+    <UserControl>
+        
+        <UserControl.Resources>
+            <Style x:Key="Flat">
+                <Setter Property="Control.BorderBrush" Value="Gray" />
+                
+                <Style.Triggers>
+                    <Trigger Property="Control.IsMouseOver" Value="True">
+                        <Setter Property="Control.BorderBrush" Value="#B22222" />
+                    </Trigger>
+                </Style.Triggers>
+            
+            </Style>
+        </UserControl.Resources>
+        <Grid>
        
 
         <StackPanel Width="400" HorizontalAlignment="Left">
@@ -28,11 +47,12 @@
    
         <StackPanel Width="300" HorizontalAlignment="Right">
             <WrapPanel Height="400" VerticalAlignment="Stretch" HorizontalAlignment="Right">
-                <Button Width="200" Height="100" Margin="10" x:Name="BtnRaad" Content="Raad" Click="BtnRaad_Click"/>
-                <Button Width="200" Height="100" Margin="10" x:Name="BtnNieuw" Content="Nieuw spel" Click="BtnNieuw_Click"></Button>
-                <Button Width="200" Height="100" Margin="10" x:Name="BtnVerberg" Content="Verberg woord" Click="BtnVerberg_Click"></Button>
+                    <Button BorderThickness="10" Style="{StaticResource Flat}" Width="200" Height="100" Margin="10" x:Name="BtnRaad" Content="Raad" Click="BtnRaad_Click"/>
+                    <Button BorderThickness="10" Style="{StaticResource Flat}" Width="200" Height="100" Margin="10" x:Name="BtnNieuw" Content="Nieuw spel" Click="BtnNieuw_Click"></Button>
+                <Button BorderThickness="10" Style="{StaticResource Flat}" Width="200" Height="100" Margin="10" x:Name="BtnVerberg" Content="Verberg woord" Click="BtnVerberg_Click"></Button>
                 <Label x:Name="Lblmasking" Content="test"></Label>
             </WrapPanel>
         </StackPanel>
     </Grid>
+    </UserControl>
 </Window>
