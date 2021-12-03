@@ -128,7 +128,7 @@
                     </WrapPanel>
                     <WrapPanel Margin="35,40,0,0">
                         <TextBox FontSize="15"  x:Name="TxtInput" Width="550" Height="30"  />
-                        <Label HorizontalContentAlignment="Center" FontSize="15" Margin="410,0,0,0" Width="160"  x:Name="timer" Content="00:00:00"></Label>
+                        <Label HorizontalContentAlignment="Center" FontWeight="ExtraBold" FontSize="15" Margin="410,0,0,0" Width="160"  x:Name="LblTimer" Content="00:00:00"></Label>
 
                     </WrapPanel>
               

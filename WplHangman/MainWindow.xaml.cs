@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -48,6 +49,7 @@ namespace WplHangman
         String correct = "";
         int levens = 10;
         string[] masking;
+        int counter = 10;
 
 
         //Indien men fout heeft geraden
@@ -143,6 +145,8 @@ namespace WplHangman
         //Event als men op Raad knop klikt
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
+            Countdown(10, TimeSpan.FromSeconds(1), cur => LblTimer.Content = cur.ToString());
+
             masking = new string[woord.Length];
             
             TxtInput.Focus();
@@ -256,5 +260,22 @@ namespace WplHangman
 
             return ControleWoord == woord.Length;               //als het correct geraden is dan geef ik een true terug
         }
+
+        void Countdown(int count, TimeSpan interval, Action<int> ts)
+        {
+            System.Threading.Thread.Sleep(1000);
+            var dt = new System.Windows.Threading.DispatcherTimer();
+            dt.Interval = interval;
+            dt.Tick += (_, a) =>
+            {
+                if (count-- == 0)
+                    dt.Stop();
+                else
+                    ts(count);
+            };
+            ts(count);
+            dt.Start();
+        }
+
     }
 }
