@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -14,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace WplHangman
 {
@@ -28,6 +30,7 @@ namespace WplHangman
             HideObject(BtnRaad);
             HideObject(BtnNieuw);
             SetImage();
+            Reset();
            
         }
 
@@ -48,8 +51,11 @@ namespace WplHangman
         String fout = "";
         String correct = "";
         int levens = 10;
-        string[] masking;
-        int counter = 10;
+        string[] masking = new string [1000];
+        int timerTickCount = 11;
+        int tijd = 1;
+        DispatcherTimer timer;
+        
 
 
         //Indien men fout heeft geraden
@@ -103,7 +109,7 @@ namespace WplHangman
             fout = "";
             correct = "";
             levens = 10;
-            LblText.Content = "Gelieven een woord of een letter in te geven:";
+            LblText.Content = "Gelieven een woord of een letter in te geven in het gele vak";
 
             
         }
@@ -129,6 +135,49 @@ namespace WplHangman
             HideObject(BtnVerberg);
             ShowObject(BtnRaad);
             ShowObject(BtnNieuw);
+            StartTimer();
+       
+        }
+
+        private void StartTimer()
+        {
+            if (timer == null)
+            {
+                timer = new DispatcherTimer();
+                timer.Tick += timer_Tick;
+            }
+            timer.Interval = TimeSpan.FromSeconds(tijd);
+            timer.Start();
+        }
+        async void  timer_Tick(object sender, EventArgs e)
+        {
+
+            if (timerTickCount == 0)
+            {
+               
+                MessageBox.Show("Hi there");
+                levens--;
+                //timer.Stop();
+                timerTickCount=10;
+                
+            }
+            else
+            {
+                if (timerTickCount == 10) 
+                {
+                    LblTimer.Content = timerTickCount;
+                    timer.Stop();
+                    await Task.Delay(1000);
+                    timer.Start();
+                   
+                }
+
+                timerTickCount--;
+                
+            }
+            LblTimer.Content = timerTickCount;
+            PrintLbl();
+
         }
 
         //Event als men op Nieuw spel klikt
@@ -136,7 +185,9 @@ namespace WplHangman
         {
             ShowObject(BtnVerberg);
             HideObject(BtnRaad);
+            timer.Stop();
             Reset();
+            timerTickCount = 10;
 
         }
 
@@ -145,67 +196,67 @@ namespace WplHangman
         //Event als men op Raad knop klikt
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
-            Countdown(10, TimeSpan.FromSeconds(1), cur => LblTimer.Content = cur.ToString());
+            
 
             masking = new string[woord.Length];
             
             TxtInput.Focus();
-            
-
-            if (levens > 1)
-            {
-                if (TxtInput.Text.Length == 1)
+          
+                if (levens > 1)
                 {
-                    if (woord.Contains(TxtInput.Text.ToLower()))
+                    if (TxtInput.Text.Length == 1)
                     {
-                        correct += TxtInput.Text.ToLower();
-                        Masking();
+                        if (woord.Contains(TxtInput.Text.ToLower()))
+                        {
+                            correct += TxtInput.Text.ToLower();
+                            Masking();
+                            timerTickCount = 10;
 
+                        }
+                        else
+                        {
+                            fout += TxtInput.Text.ToLower();
+                            Fout();
+                            Masking();
+                            timerTickCount = 10;
+
+                    }
+                        if (ControleWoord())
+                        {
+                            Masking();
+                            Gewonnen();
+                            timerTickCount = 10;
+                    }
+                        else
+                        {
+                            Masking();
+                            PrintLbl();
+                            TxtInput.Clear();
+                            timerTickCount = 10;
+                    }
                     }
                     else
                     {
-                        fout += TxtInput.Text.ToLower();
-                        Fout();
-                        Masking();
-
-
+                        if (TxtInput.Text.ToLower() == woord)
+                        {
+                            Masking();
+                            Gewonnen();
+                            timer.Stop();
                     }
-                    if (ControleWoord() )
-                    {
-                        Masking();
-                        Gewonnen();
-                       
+                        else
+                        {
+                            Masking();
+                            Fout();
+                            MessageBox.Show("Fout geraden\nHelaas Pindakaas.");
+                            timerTickCount = 10;
                     }
-                    else
-                    {
-                        Masking();
-                        PrintLbl();
-                        TxtInput.Clear();                    
                     }
                 }
                 else
                 {
-                    if (TxtInput.Text.ToLower() == woord)
-                    {
-                        Masking();
-                        Gewonnen();
-                      
-                    }
-                    else
-                    {
-                        Masking();
-                        Fout();
-                        MessageBox.Show("Fout geraden\nHelaas Pindakaas.");
-                        
-                    }
+                    Verloren();
                 }
-            }
-            else
-            {
-                Verloren();
-            }
-
-
+         
         }
        
       
@@ -260,22 +311,8 @@ namespace WplHangman
 
             return ControleWoord == woord.Length;               //als het correct geraden is dan geef ik een true terug
         }
+       
 
-        void Countdown(int count, TimeSpan interval, Action<int> ts)
-        {
-            System.Threading.Thread.Sleep(1000);
-            var dt = new System.Windows.Threading.DispatcherTimer();
-            dt.Interval = interval;
-            dt.Tick += (_, a) =>
-            {
-                if (count-- == 0)
-                    dt.Stop();
-                else
-                    ts(count);
-            };
-            ts(count);
-            dt.Start();
-        }
 
     }
 }
