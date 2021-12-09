@@ -30,11 +30,31 @@ namespace WplHangman
             HideObject(BtnRaad);
             HideObject(BtnNieuw);
             SetImage();
+            SetBck(true);
             Reset();
-           
         }
-
-
+        private void SetBck(bool v)
+        {
+            ImageBrush bckbrush = new ImageBrush();
+            Image image = new Image();
+            Uri locatie = new Uri($"Assets/Agrd.jpg", UriKind.Relative);
+            image.Source = new BitmapImage(locatie);
+            
+            RotateTransform rotateTransform = new RotateTransform(180);
+            image.RenderTransform = rotateTransform;
+            bckbrush.ImageSource = image.Source;
+            View.Background = bckbrush;
+           
+            if (!v)
+            {
+                locatie = new Uri($"Assets/ArgdFout.jpg", UriKind.Relative);
+                image.Source = new BitmapImage(locatie);
+                image.RenderTransform = rotateTransform;
+                bckbrush.ImageSource = image.Source;
+                              View.Background = bckbrush;
+                
+            }
+        }
         // Buttons hidden of viable zetten
         private void HideObject(Button button)
         {
@@ -44,8 +64,6 @@ namespace WplHangman
         {
             button.Visibility = Visibility.Visible;
         }
-
-
         // Globale variabelen
         public String woord = "";
         String fout = "";
@@ -55,32 +73,33 @@ namespace WplHangman
         int timerTickCount = 11;
         int tijd = 1;
         DispatcherTimer timer;
-        
-
-
         //Indien men fout heeft geraden
         private void Fout()
         {
-            
+            timer.Stop();
             levens--;
+            timerTickCount = 10;
+            LblTimer.Content = timerTickCount;
             PrintLbl();
             TxtInput.Clear();
-           
+            timer.Start();
         }
-
         //Indien men Verloren heeft
         private void Verloren()
         {
+            timer.Stop();
             SetImage();
             MessageBox.Show("Je bent opgehangen");
             LblText.Content = "Dank U voor het spelen \n";
             LblText.Content += $"Het woord dat wij zochten was: \n\n{woord}";
             TxtInput.Clear();
         }
-
         //Indien men gewonnen heeft
         private void Gewonnen()
         {
+            timerTickCount = 10;
+            LblTimer.Content = timerTickCount;
+            timer.Stop();
             MessageBox.Show("Correct geraden");
             SetImage();
             LblText.Content = "Dank U voor het spelen\n";
@@ -88,32 +107,25 @@ namespace WplHangman
             HideObject(BtnRaad);
             TxtInput.Clear();
         }
-
         private void SetImage()
         {
-
-
-            Uri url = new Uri($"Assets/{levens}.png",UriKind.Relative);
+            Uri url = new Uri($"Assets/{levens}.jpg",UriKind.Relative);
             //IMG aanmaken als een bitmap
             BitmapImage bitmap = new BitmapImage(url);
             // bitmap toevoegen aan WPF
             Hangman.Source = bitmap;
-
-
         }
-         
         //alles resetten
         private void Reset()
         {
+            timerTickCount = 10;
             TxtInput.Text = "";
             fout = "";
             correct = "";
             levens = 10;
+            SetImage();
             LblText.Content = "Gelieven een woord of een letter in te geven in het gele vak";
-
-            
         }
-
         //Lbl printen
         private void PrintLbl()
         {
@@ -123,9 +135,6 @@ namespace WplHangman
             LblText.Content += $"Fout gerade letters: {fout}";
             Lblmasking.Content = string.Join("", masking);
         }
-
-
-
         //Event als men op Verberg knop klikt
         private void BtnVerberg_Click(object sender, RoutedEventArgs e)
         {
@@ -136,9 +145,7 @@ namespace WplHangman
             ShowObject(BtnRaad);
             ShowObject(BtnNieuw);
             StartTimer();
-       
         }
-
         private void StartTimer()
         {
             if (timer == null)
@@ -154,12 +161,13 @@ namespace WplHangman
 
             if (timerTickCount == 0)
             {
-               
-                MessageBox.Show("Hi there");
+                SetBck(false);
+                MessageBox.Show("Tijd is op!");
                 levens--;
                 //timer.Stop();
+
                 timerTickCount=10;
-                
+                SetBck(true);
             }
             else
             {
@@ -179,7 +187,6 @@ namespace WplHangman
             PrintLbl();
 
         }
-
         //Event als men op Nieuw spel klikt
         public void BtnNieuw_Click(object sender, RoutedEventArgs e)
         {
@@ -187,21 +194,16 @@ namespace WplHangman
             HideObject(BtnRaad);
             timer.Stop();
             Reset();
-            timerTickCount = 10;
+            Lblmasking.Content = "";
+            
 
         }
-
-
-
         //Event als men op Raad knop klikt
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
-            
-
+            timer.Start();
             masking = new string[woord.Length];
-            
             TxtInput.Focus();
-          
                 if (levens > 1)
                 {
                     if (TxtInput.Text.Length == 1)
@@ -211,21 +213,20 @@ namespace WplHangman
                             correct += TxtInput.Text.ToLower();
                             Masking();
                             timerTickCount = 10;
-
+                            timer.Stop();
                         }
                         else
                         {
                             fout += TxtInput.Text.ToLower();
                             Fout();
                             Masking();
-                            timerTickCount = 10;
-
+                           
                     }
                         if (ControleWoord())
                         {
-                            Masking();
                             Gewonnen();
-                            timerTickCount = 10;
+                            Masking();
+                                                  
                     }
                         else
                         {
@@ -239,9 +240,8 @@ namespace WplHangman
                     {
                         if (TxtInput.Text.ToLower() == woord)
                         {
-                            Masking();
+                        Masking();
                             Gewonnen();
-                            timer.Stop();
                     }
                         else
                         {
@@ -256,43 +256,28 @@ namespace WplHangman
                 {
                     Verloren();
                 }
-         
         }
-       
-      
         private void Masking()
         {
             SetImage();
-            int ControleWoord = 0;
             FillMasking();
             for (int i = 0; i < woord.Length; i++)
             {
-                
                 if (correct.Contains(woord.Substring(i, 1)))
-                {    //Letter per letter kijken als deze in correct zit
-
+                {   
                     masking[i] = woord.Substring(i, 1);
-                    ControleWoord++;
-                                                                  
-                                                             
-                                                              
                 }
                 
             }
            
         }
-
         private void FillMasking()
         {
-         
             for (int i = 0; i < woord.Length; i++)
             {
                 masking[i] = "*";
             }
         }
-
-
-
         //Kijken als de ingevoerde letters overeen komen met het woor dat we zoeken
         private bool ControleWoord()
         {
@@ -306,13 +291,8 @@ namespace WplHangman
                                                                 // bv glenn --> als ik n ingeef is dit Controlewoord +2
                                                                 // De som gaat dat automatisch overeenkomen met lengte van het te raden woord
                 }
-
             }
-
             return ControleWoord == woord.Length;               //als het correct geraden is dan geef ik een true terug
         }
-       
-
-
     }
 }

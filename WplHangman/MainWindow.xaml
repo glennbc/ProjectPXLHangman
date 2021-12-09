@@ -8,10 +8,10 @@
         Title="MainWindow" Height="600" Width="1200">
 
     <UserControl>
-        <Viewbox x:Name="WindowVenster">
-            <Grid Width="1250" Height="600">
+        <Viewbox>
+            <Grid x:Name="View" Width="1250" Height="600">
             <Grid.Background>
-                    <ImageBrush ImageSource="/bck.jpeg" Stretch="Fill">
+                    <ImageBrush ImageSource="Assets/Agrd.jpg" Stretch="Fill">
                         <ImageBrush.RelativeTransform>
                             <TransformGroup>
                                 <ScaleTransform CenterY="0.5" CenterX="0.5"/>
@@ -117,7 +117,9 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
-                </WrapPanel>
+                      
+                  
+                    </WrapPanel>
             <WrapPanel Margin="10,70,0,0" Height="190" >
                     <Label FontSize="20" Width="585" Height="185"  Content="Geef een geheim woord in" x:Name="LblText" />
                         <Image Margin="150,0,0,0" x:Name="Hangman"  Source="Assets/1.jpg"></Image>
