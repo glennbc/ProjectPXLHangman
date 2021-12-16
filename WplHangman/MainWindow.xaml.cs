@@ -73,6 +73,112 @@ namespace WplHangman
         int timerTickCount = 11;
         int tijd = 1;
         DispatcherTimer timer;
+
+        private string[] galgjeWoorden = new string[]
+{
+    "grafeem",
+    "tjiftjaf",
+    "maquette",
+    "kitsch",
+    "pochet",
+    "convocaat",
+    "jakkeren",
+    "collaps",
+    "zuivel",
+    "cesium",
+    "voyant",
+    "spitten",
+    "pancake",
+    "gietlepel",
+    "karwats",
+    "dehydreren",
+    "viswijf",
+    "flater",
+    "cretonne",
+    "sennhut",
+    "tichel",
+    "wijten",
+    "cadeau",
+    "trotyl",
+    "chopper",
+    "pielen",
+    "vigeren",
+    "vrijuit",
+    "dimorf",
+    "kolchoz",
+    "janhen",
+    "plexus",
+    "borium",
+    "ontweien",
+    "quiche",
+    "ijverig",
+    "mecenaat",
+    "falset",
+    "telexen",
+    "hieruit",
+    "femelaar",
+    "cohesie",
+    "exogeen",
+    "plebejer",
+    "opbouw",
+    "zodiak",
+    "volder",
+    "vrezen",
+    "convex",
+    "verzenden",
+    "ijstijd",
+    "fetisj",
+    "gerekt",
+    "necrose",
+    "conclaaf",
+    "clipper",
+    "poppetjes",
+    "looikuip",
+    "hinten",
+    "inbreng",
+    "arbitraal",
+    "dewijl",
+    "kapzaag",
+    "welletjes",
+    "bissen",
+    "catgut",
+    "oxymoron",
+    "heerschaar",
+    "ureter",
+    "kijkbuis",
+    "dryade",
+    "grofweg",
+    "laudanum",
+    "excitatie",
+    "revolte",
+    "heugel",
+    "geroerd",
+    "hierbij",
+    "glazig",
+    "pussen",
+    "liquide",
+    "aquarium",
+    "formol",
+    "kwelder",
+    "zwager",
+    "vuldop",
+    "halfaap",
+    "hansop",
+    "windvaan",
+    "bewogen",
+    "vulstuk",
+    "efemeer",
+    "decisief",
+    "omslag",
+    "prairie",
+    "schuit",
+    "weivlies",
+    "ontzeggen",
+    "schijn",
+    "sousafoon"
+};
+
+
         //Indien men fout heeft geraden
         private void Fout()
         {
@@ -293,6 +399,31 @@ namespace WplHangman
                 }
             }
             return ControleWoord == woord.Length;               //als het correct geraden is dan geef ik een true terug
+        }
+
+        private void menuAfsluiten(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void menuNieuw(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void menuHigh(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void menuHint(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void menuTimer(object sender, RoutedEventArgs e)
+        {
+           
         }
     }
 }
