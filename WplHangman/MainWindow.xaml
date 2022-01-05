@@ -40,7 +40,7 @@
                                 <MenuItem Header="1 VS _CPU" Click="MenuCpu" x:Name="MnCPU"></MenuItem>
                                 <MenuItem Header="_1 VS 1" Click="MenuEen" x:Name="MnEen"></MenuItem>
                             </MenuItem>
-                            <MenuItem Header="H_int" Click="menuHint"></MenuItem>
+                            <MenuItem Header="H_int" Click="menuHint" x:Name="MnHint"></MenuItem>
                             <MenuItem Header="_Timer instellen" x:Name="mntimer" Click="menuTimer"></MenuItem>
                             <Separator />
                             <MenuItem Header="_Afsluiten" Click="menuAfsluiten"></MenuItem>

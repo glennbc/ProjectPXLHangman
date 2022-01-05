@@ -84,6 +84,8 @@ namespace WplHangman
         //True = 1 VS CPU     False = 1 VS 1
         bool spelModus = true;
         DispatcherTimer timer;
+        //Kan de speler in de highscore komen?
+        bool highscore = false;
         //Aray met woorden voor met CPU
         private string[] galgjeWoorden = new string[]
 {
@@ -279,13 +281,13 @@ namespace WplHangman
                 
             }
             SetImage();
-          
             Reset();
             HideObject(BtnVerberg);
             ShowObject(BtnRaad);
             ShowObject(BtnNieuw);
             StartTimer();
-            mntimer.Visibility = Visibility.Hidden;
+            MnHint.IsEnabled = true;
+            mntimer.IsEnabled = false;
             spelActief = true;
           
         }
@@ -342,6 +344,8 @@ namespace WplHangman
         //Een nieuw spel starten en kijken welke modus het is
         private void StartNieuwSpel()
         {
+            MnHint.IsEnabled = false;
+            mntimer.IsEnabled = true;
             if (spelActief)
             {
                 timer.Stop();
@@ -368,7 +372,7 @@ namespace WplHangman
             woord = "";
            
             
-            mntimer.Visibility = Visibility.Visible;
+           
           
         }
 
@@ -379,13 +383,14 @@ namespace WplHangman
             BtnVerberg.Content = "Verberg";
             Lblmasking.Content = "1 VS 1";
             woord = "";
-            mntimer.Visibility = Visibility.Visible;
+          
         }
 
         //Event als men op Raad knop klikt
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
             Raad();
+            
             spelActief = true;
         }
 
@@ -518,14 +523,25 @@ namespace WplHangman
 
         private void menuHint(object sender, RoutedEventArgs e)
         {
-
+         
+               
+          
+                Random rnd = new Random();
+                char hint = (char)rnd.Next('a', 'z');
+                do
+                {
+                    hint = (char)rnd.Next('a', 'z');
+                } while (woord.Contains(hint) && fout.Contains(hint));
+                MessageBox.Show($"Hier is je hint:\n{hint}");
+            highscore = false;
+           
+           
         }
 
         private void menuTimer(object sender, RoutedEventArgs e)
         {
-            if (!spelActief)
-            {
-                mntimer.IsEnabled = true;
+           
+             
                 if (!int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef tijd van de timer"), out userTimer))
                 {
                     int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef tijd van de timer in gehele getallen"), out userTimer);
@@ -542,15 +558,11 @@ namespace WplHangman
                     }
                 }
             }
-            else
-            {
-                mntimer.IsEnabled = false;
-            }
-           
+        
           
            
 
-        }
+        
 
         private void MenuCpu(object sender, RoutedEventArgs e)
         {
@@ -571,7 +583,8 @@ namespace WplHangman
             ShowObject(BtnVerberg);
             HideObject(BtnRaad);
             Lblmasking.Content = "1 VS 1";
-            mntimer.Visibility = Visibility.Visible;
+      
+
             StartNieuwSpel();
 
         }
