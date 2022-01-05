@@ -27,11 +27,17 @@ namespace WplHangman
         public MainWindow()
         {
             InitializeComponent();
+        }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
             HideObject(BtnRaad);
-            HideObject(BtnNieuw);
+            ShowObject(BtnNieuw);
+            HideObject(BtnVerberg);
             SetImage();
             SetBck(true);
-            Reset();
+            spelActief = false;
+            MnCPU.IsChecked = true;
+            StartNieuwSpel();
         }
         private void SetBck(bool v)
         {
@@ -69,11 +75,16 @@ namespace WplHangman
         String fout = "";
         String correct = "";
         int levens = 10;
-        string[] masking = new string [1000];
+        //beperken van aatal letters
+        string[]masking = new string [100];
+        int userTimer = 10;
         int timerTickCount = 11;
         int tijd = 1;
+        bool spelActief = false;
+        //True = 1 VS CPU     False = 1 VS 1
+        bool spelModus = true;
         DispatcherTimer timer;
-
+        //Aray met woorden voor met CPU
         private string[] galgjeWoorden = new string[]
 {
     "grafeem",
@@ -177,14 +188,12 @@ namespace WplHangman
     "schijn",
     "sousafoon"
 };
-
-
         //Indien men fout heeft geraden
         private void Fout()
         {
             timer.Stop();
             levens--;
-            timerTickCount = 10;
+            timerTickCount = userTimer;
             LblTimer.Content = timerTickCount;
             PrintLbl();
             TxtInput.Clear();
@@ -199,11 +208,14 @@ namespace WplHangman
             LblText.Content = "Dank U voor het spelen \n";
             LblText.Content += $"Het woord dat wij zochten was: \n\n{woord}";
             TxtInput.Clear();
+            ShowObject(BtnNieuw);
+            HideObject(BtnRaad);
+            spelActief = false;
         }
         //Indien men gewonnen heeft
         private void Gewonnen()
         {
-            timerTickCount = 10;
+            timerTickCount = userTimer;
             LblTimer.Content = timerTickCount;
             timer.Stop();
             MessageBox.Show("Correct geraden");
@@ -212,7 +224,9 @@ namespace WplHangman
             LblText.Content += $"Het woord dat wij zochten was: \n\n{woord}";
             HideObject(BtnRaad);
             TxtInput.Clear();
+            spelActief = false;
         }
+        //Het mannetje tonen aan de hand van de levens
         private void SetImage()
         {
             Uri url = new Uri($"Assets/{levens}.jpg",UriKind.Relative);
@@ -221,21 +235,21 @@ namespace WplHangman
             // bitmap toevoegen aan WPF
             Hangman.Source = bitmap;
         }
-        //alles resetten
+        //alles resetten voor 1 VS 1
         private void Reset()
         {
-            timerTickCount = 10;
+            timerTickCount = userTimer;
             TxtInput.Text = "";
             fout = "";
             correct = "";
             levens = 10;
             SetImage();
-            LblText.Content = "Gelieven een woord of een letter in te geven in het gele vak";
-        }
+                }
+              
         //Lbl printen
         private void PrintLbl()
         {
-            LblText.Content = "";
+            LblText.Content = "Gelieven een woord of een letter in te geven in het gele vak\nDruk dan op raad\n\n";
             LblText.Content += $"U heeft op dit moment {levens} Leven(s)\n\n";
             LblText.Content += $"Correct gerade letters: {correct}\n";
             LblText.Content += $"Fout gerade letters: {fout}";
@@ -244,16 +258,41 @@ namespace WplHangman
         //Event als men op Verberg knop klikt
         private void BtnVerberg_Click(object sender, RoutedEventArgs e)
         {
+            if (spelModus)
+            {
+                //Radom getal voor een random woord te vinden
+                Random getal = new Random();
+                woord = galgjeWoorden[getal.Next(0, galgjeWoorden.Length)];
+                masking = new string[woord.Length];
+                Reset();
+                Masking();
+                
+
+            }
+            else
+            {
+               
+                woord = TxtInput.Text.ToLower();
+                masking = new string[woord.Length];
+                Reset();
+                Masking();
+                
+            }
             SetImage();
-            woord = TxtInput.Text.ToLower();
+          
             Reset();
             HideObject(BtnVerberg);
             ShowObject(BtnRaad);
             ShowObject(BtnNieuw);
             StartTimer();
+            mntimer.Visibility = Visibility.Hidden;
+            spelActief = true;
+          
         }
+        //Timers voor spel verloop
         private void StartTimer()
         {
+            spelActief = true;
             if (timer == null)
             {
                 timer = new DispatcherTimer();
@@ -272,12 +311,12 @@ namespace WplHangman
                 levens--;
                 //timer.Stop();
 
-                timerTickCount=10;
+                timerTickCount= userTimer;
                 SetBck(true);
             }
             else
             {
-                if (timerTickCount == 10) 
+                if (timerTickCount == userTimer) 
                 {
                     LblTimer.Content = timerTickCount;
                     timer.Stop();
@@ -296,29 +335,87 @@ namespace WplHangman
         //Event als men op Nieuw spel klikt
         public void BtnNieuw_Click(object sender, RoutedEventArgs e)
         {
-            ShowObject(BtnVerberg);
-            HideObject(BtnRaad);
-            timer.Stop();
-            Reset();
-            Lblmasking.Content = "";
-            
+
+            StartNieuwSpel();
 
         }
+        //Een nieuw spel starten en kijken welke modus het is
+        private void StartNieuwSpel()
+        {
+            if (spelActief)
+            {
+                timer.Stop();
+            }
+            if (spelModus)
+            {
+                VsCpu();
+                LblText.Content = $"1 VS CPU \n \nKlik op nieuw spel om te starten.\nJe kan ook de spelmodus aan passen in het menu.\n\nKlik op beginnen\nVul daarna een woord of letter in het gele vak en klik dan op raad.";
+            }
+            else
+            {
+                Multispeler();
+                LblText.Content = $"1 VS 1 \n \nKlik op nieuw spel om te starten.\nJe kan ook de spelmodus aan passen in het menu.\n\nVul een woord in het gele vak en druk op verberg.\nVul daarna een woord of letter in het gele vak en klik dan op raad.";
+
+            }
+        }
+
+        private void VsCpu()
+        {                               
+            ShowObject(BtnVerberg);
+            HideObject(BtnRaad);
+            BtnVerberg.Content = "Beginnen";
+            Lblmasking.Content = "1 VS CPU";
+            woord = "";
+           
+            
+            mntimer.Visibility = Visibility.Visible;
+          
+        }
+
+        private void Multispeler()
+        {
+            ShowObject(BtnVerberg);
+            HideObject(BtnRaad);
+            BtnVerberg.Content = "Verberg";
+            Lblmasking.Content = "1 VS 1";
+            woord = "";
+            mntimer.Visibility = Visibility.Visible;
+        }
+
         //Event als men op Raad knop klikt
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
+            Raad();
+            spelActief = true;
+        }
+
+        private void Raad()
+        {
             timer.Start();
-            masking = new string[woord.Length];
+          
             TxtInput.Focus();
-                if (levens > 1)
+            if (levens > 1)
+            {
+                if (fout.Contains(TxtInput.Text.ToLower()) || correct.Contains(TxtInput.Text.ToLower()))
                 {
+
+                    timerTickCount = userTimer;
+                    timer.Stop();
+                    MessageBox.Show($"U heeft lettertje {TxtInput.Text} al ingegeven.");
+                    TxtInput.Clear();
+
+                }
+                else
+                {
+
+
                     if (TxtInput.Text.Length == 1)
                     {
                         if (woord.Contains(TxtInput.Text.ToLower()))
                         {
                             correct += TxtInput.Text.ToLower();
                             Masking();
-                            timerTickCount = 10;
+                            timerTickCount = userTimer;
                             timer.Stop();
                         }
                         else
@@ -326,43 +423,46 @@ namespace WplHangman
                             fout += TxtInput.Text.ToLower();
                             Fout();
                             Masking();
-                           
-                    }
+
+                        }
                         if (ControleWoord())
                         {
                             Gewonnen();
                             Masking();
-                                                  
-                    }
+
+                        }
                         else
                         {
                             Masking();
                             PrintLbl();
                             TxtInput.Clear();
-                            timerTickCount = 10;
-                    }
+                            timerTickCount = userTimer;
+                        }
                     }
                     else
                     {
                         if (TxtInput.Text.ToLower() == woord)
                         {
-                        Masking();
+                            Masking();
                             Gewonnen();
-                    }
+                        }
                         else
                         {
                             Masking();
                             Fout();
                             MessageBox.Show("Fout geraden\nHelaas Pindakaas.");
-                            timerTickCount = 10;
-                    }
+                            timerTickCount = userTimer;
+                        }
                     }
                 }
-                else
-                {
-                    Verloren();
-                }
+            }
+            else
+            {
+                Verloren();
+            }
+            
         }
+
         private void Masking()
         {
             SetImage();
@@ -408,7 +508,7 @@ namespace WplHangman
 
         private void menuNieuw(object sender, RoutedEventArgs e)
         {
-
+            StartNieuwSpel();
         }
 
         private void menuHigh(object sender, RoutedEventArgs e)
@@ -423,7 +523,68 @@ namespace WplHangman
 
         private void menuTimer(object sender, RoutedEventArgs e)
         {
+            if (!spelActief)
+            {
+                mntimer.IsEnabled = true;
+                if (!int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef tijd van de timer"), out userTimer))
+                {
+                    int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef tijd van de timer in gehele getallen"), out userTimer);
+                }
+                else
+                {
+                    if (userTimer < 5 || userTimer > 20)
+                    {
+                        int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef een tijd in groter dan 5 en kleiner dan 20"), out userTimer);
+                    }
+                    else
+                    {
+                        timerTickCount = userTimer;
+                    }
+                }
+            }
+            else
+            {
+                mntimer.IsEnabled = false;
+            }
            
+          
+           
+
         }
+
+        private void MenuCpu(object sender, RoutedEventArgs e)
+        {
+            MnCPU.IsChecked = true;
+            MnEen.IsChecked = false;
+            spelModus = true;
+            HideObject(BtnRaad);
+            ShowObject(BtnNieuw);
+            HideObject(BtnVerberg);
+            StartNieuwSpel();
+        }
+
+        private void MenuEen(object sender, RoutedEventArgs e)
+        {
+            MnCPU.IsChecked = false;
+            MnEen.IsChecked = true;
+            spelModus = false;
+            ShowObject(BtnVerberg);
+            HideObject(BtnRaad);
+            Lblmasking.Content = "1 VS 1";
+            mntimer.Visibility = Visibility.Visible;
+            StartNieuwSpel();
+
+        }
+
+      
+        private void TxtInput_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                Raad();
+            }
+        }
+
+       
     }
 }

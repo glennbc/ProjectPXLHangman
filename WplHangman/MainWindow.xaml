@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WplHangman"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1200">
+        Title="MainWindow" Height="600" Width="1200" Loaded="Window_Loaded">
  
     <UserControl>
         
@@ -34,12 +34,16 @@
                     <!--Background transparant van de dockpannel anders is de background weg-->
                     <Menu DockPanel.Dock="Top" Background="Transparent">
                         <MenuItem Header="_Menu">
-                            <MenuItem Header="Nieuw spel" Click="menuNieuw"></MenuItem>
-                            <MenuItem Header="Highscores" Click="menuHigh"></MenuItem>
-                            <MenuItem Header="Hint" Click="menuHint"></MenuItem>
-                            <MenuItem Header="Timer instellen" Click="menuTimerZ"></MenuItem>
+                            <MenuItem Header="_Nieuw spel" Click="menuNieuw"></MenuItem>
+                            <MenuItem Header="_Highscores" Click="menuHigh"></MenuItem>
+                            <MenuItem Header="_Spelmodus" >
+                                <MenuItem Header="1 VS _CPU" Click="MenuCpu" x:Name="MnCPU"></MenuItem>
+                                <MenuItem Header="_1 VS 1" Click="MenuEen" x:Name="MnEen"></MenuItem>
+                            </MenuItem>
+                            <MenuItem Header="H_int" Click="menuHint"></MenuItem>
+                            <MenuItem Header="_Timer instellen" x:Name="mntimer" Click="menuTimer"></MenuItem>
                             <Separator />
-                            <MenuItem Header="Afsluiten" Click="menuAfsluiten"></MenuItem>
+                            <MenuItem Header="_Afsluiten" Click="menuAfsluiten"></MenuItem>
                         </MenuItem>
                     </Menu>
                 </DockPanel>
@@ -142,7 +146,7 @@
 
                     </WrapPanel>
                     <WrapPanel Margin="10,70,0,0" Height="190" >
-                        <Label FontSize="20" Width="585" Height="185"  Content="Geef een geheim woord in" x:Name="LblText" />
+                        <Label FontSize="18" Width="585" Height="185"  Content="" x:Name="LblText" />
                         <Image Margin="150,0,0,0" x:Name="Hangman"  Source="Assets/1.jpg"></Image>
 
                     </WrapPanel>
@@ -150,7 +154,7 @@
                         <Label HorizontalContentAlignment="Center" FontWeight="Bold" FontSize="15" Width="470" x:Name="Lblmasking" Content=""></Label>
                     </WrapPanel>
                     <WrapPanel Margin="35,40,0,0">
-                        <TextBox FontSize="15"  x:Name="TxtInput" Width="550" Height="30"  />
+                        <TextBox FontSize="15"  x:Name="TxtInput" Width="550" Height="30" KeyDown="TxtInput_KeyDown"  />
                         <Label HorizontalContentAlignment="Center" FontWeight="ExtraBold" FontSize="15" Margin="410,0,0,0" Width="160"  x:Name="LblTimer" Content="0"></Label>
 
                     </WrapPanel>
