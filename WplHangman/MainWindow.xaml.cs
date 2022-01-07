@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -28,64 +29,26 @@ namespace WplHangman
         {
             InitializeComponent();
         }
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            HideObject(BtnRaad);
-            ShowObject(BtnNieuw);
-            HideObject(BtnVerberg);
-            SetImage();
-            SetBck(true);
-            spelActief = false;
-            MnCPU.IsChecked = true;
-            StartNieuwSpel();
-        }
-        private void SetBck(bool v)
-        {
-            ImageBrush bckbrush = new ImageBrush();
-            Image image = new Image();
-            Uri locatie = new Uri($"Assets/Agrd.jpg", UriKind.Relative);
-            image.Source = new BitmapImage(locatie);
-            
-            RotateTransform rotateTransform = new RotateTransform(180);
-            image.RenderTransform = rotateTransform;
-            bckbrush.ImageSource = image.Source;
-            View.Background = bckbrush;
-           
-            if (!v)
-            {
-                locatie = new Uri($"Assets/ArgdFout.jpg", UriKind.Relative);
-                image.Source = new BitmapImage(locatie);
-                image.RenderTransform = rotateTransform;
-                bckbrush.ImageSource = image.Source;
-                              View.Background = bckbrush;
-                
-            }
-        }
-        // Buttons hidden of viable zetten
-        private void HideObject(Button button)
-        {
-            button.Visibility = Visibility.Hidden;
-        }
-        private void ShowObject(Button button)
-        {
-            button.Visibility = Visibility.Visible;
-        }
+        #region Variabelen
         // Globale variabelen
         public String woord = "";
         String fout = "";
         String correct = "";
         int levens = 10;
-        //beperken van aatal letters
         string[]masking = new string [100];
         int userTimer = 10;
         int timerTickCount = 11;
         int tijd = 1;
+        //Highscore list
+        List<HigScore> Punten = new List<HigScore>();
+        //Kan de speler in de highscore komen?
+        bool TopList = true;
+        // is het spel actief
         bool spelActief = false;
         //True = 1 VS CPU     False = 1 VS 1
         bool spelModus = true;
+        //Timer aanmaken
         DispatcherTimer timer;
-        //Kan de speler in de highscore komen?
-        bool highscore = false;
         //Aray met woorden voor met CPU
         private string[] galgjeWoorden = new string[]
 {
@@ -190,22 +153,80 @@ namespace WplHangman
     "schijn",
     "sousafoon"
 };
-        //Indien men fout heeft geraden
+        #endregion
+        #region Start van de app
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // default uitzicht creeeren als app laad
+            HideObject(BtnRaad);
+            ShowObject(BtnNieuw);
+            HideObject(BtnVerberg);
+            SetImage();
+            SetBck(true);
+            //Het spel is nog niet bezif
+            spelActief = false;
+            //Standaard speel je tegen de CPU
+            MnCPU.IsChecked = true;
+            //Spel starten voor CPU gebruiker moet eerst op verberg/beginnen klikken
+            StartNieuwSpel();
+        }
+        #endregion
+        #region achtergrond zetten standaard en als fout is.
+        private void SetBck(bool v)
+        {
+            ImageBrush bckbrush = new ImageBrush();
+            Image image = new Image();
+            Uri locatie = new Uri($"Assets/Agrd.jpg", UriKind.Relative);
+            image.Source = new BitmapImage(locatie);
+
+            RotateTransform rotateTransform = new RotateTransform(180);
+            image.RenderTransform = rotateTransform;
+            bckbrush.ImageSource = image.Source;
+            View.Background = bckbrush;
+
+            if (!v)
+            {
+                locatie = new Uri($"Assets/ArgdFout.jpg", UriKind.Relative);
+                image.Source = new BitmapImage(locatie);
+                image.RenderTransform = rotateTransform;
+                bckbrush.ImageSource = image.Source;
+                View.Background = bckbrush;
+
+            }
+        }
+        #endregion
+        #region  Buttons hidden of viable zetten
+        private void HideObject(Button button)
+        {
+            button.Visibility = Visibility.Hidden;
+        }
+        private void ShowObject(Button button)
+        {
+            button.Visibility = Visibility.Visible;
+        }
+        #endregion
+        #region Fout geraden
         private void Fout()
         {
+            
             timer.Stop();
             levens--;
+            //timer resetten voor nieuwe letter te raden
             timerTickCount = userTimer;
             LblTimer.Content = timerTickCount;
+            //Update van de label met de foute letter erin te zetten
             PrintLbl();
+            //Veld leeg maken voor nieuwe letter te kunnen ingeven
             TxtInput.Clear();
+            //Timer weer starten voor opnieuw te raden
             timer.Start();
         }
-        //Indien men Verloren heeft
+        #endregion
+        #region Indien men Verloren heeft
         private void Verloren()
         {
             timer.Stop();
-            SetImage();
+            SetImageDOOD();
             MessageBox.Show("Je bent opgehangen");
             LblText.Content = "Dank U voor het spelen \n";
             LblText.Content += $"Het woord dat wij zochten was: \n\n{woord}";
@@ -214,30 +235,58 @@ namespace WplHangman
             HideObject(BtnRaad);
             spelActief = false;
         }
-        //Indien men gewonnen heeft
+
+       
+        #endregion
+        #region Indien men gewonnen heeft
         private void Gewonnen()
         {
             timerTickCount = userTimer;
             LblTimer.Content = timerTickCount;
             timer.Stop();
-            MessageBox.Show("Correct geraden");
             SetImage();
             LblText.Content = "Dank U voor het spelen\n";
             LblText.Content += $"Het woord dat wij zochten was: \n\n{woord}";
             HideObject(BtnRaad);
             TxtInput.Clear();
+            BehaaldHS();
             spelActief = false;
         }
-        //Het mannetje tonen aan de hand van de levens
+        #endregion
+        #region Highscore
+        private void BehaaldHS()
+        {
+            //Als je in de higscore mag komen
+            if (TopList)
+            {
+                //Naam vragen aan de speler en deze toevoegen aan de List Punten
+                string naam = Microsoft.VisualBasic.Interaction.InputBox("WOW goed gespeeld geef je naam in voor de highscore");
+                Punten.Add(new HigScore { tijd = DateTime.Now.ToString("HH:mm:ss"), naam = naam, score = levens });
+            }
+
+       
+
+        }
+        #endregion
+        #region Tekenen mannetje aan de hand van de levens
         private void SetImage()
         {
-            Uri url = new Uri($"Assets/{levens}.jpg",UriKind.Relative);
+            Uri url = new Uri($"Assets/{levens}.png",UriKind.Relative);
             //IMG aanmaken als een bitmap
             BitmapImage bitmap = new BitmapImage(url);
             // bitmap toevoegen aan WPF
             Hangman.Source = bitmap;
         }
-        //alles resetten voor 1 VS 1
+        private void SetImageDOOD()
+        {
+            Uri url = new Uri($"Assets/0.png", UriKind.Relative);
+            //IMG aanmaken als een bitmap
+            BitmapImage bitmap = new BitmapImage(url);
+            // bitmap toevoegen aan WPF
+            Hangman.Source = bitmap;
+        }
+        #endregion
+        #region reset
         private void Reset()
         {
             timerTickCount = userTimer;
@@ -247,8 +296,8 @@ namespace WplHangman
             levens = 10;
             SetImage();
                 }
-              
-        //Lbl printen
+        #endregion
+        #region Lbl printen
         private void PrintLbl()
         {
             LblText.Content = "Gelieven een woord of een letter in te geven in het gele vak\nDruk dan op raad\n\n";
@@ -257,12 +306,16 @@ namespace WplHangman
             LblText.Content += $"Fout gerade letters: {fout}";
             Lblmasking.Content = string.Join("", masking);
         }
-        //Event als men op Verberg knop klikt
+        #endregion
+        #region Event als men op Verberg/begin knop klikt
         private void BtnVerberg_Click(object sender, RoutedEventArgs e)
         {
+            // speler mag in highscore komen
+            TopList = true;
+            // kijken 1VS1 of CPU vs 1
             if (spelModus)
             {
-                //Radom getal voor een random woord te vinden
+                //Radom getal voor een random woord te vinden voor 1 VS CPU
                 Random getal = new Random();
                 woord = galgjeWoorden[getal.Next(0, galgjeWoorden.Length)];
                 masking = new string[woord.Length];
@@ -273,7 +326,7 @@ namespace WplHangman
             }
             else
             {
-               
+               // 1 VS 1
                 woord = TxtInput.Text.ToLower();
                 masking = new string[woord.Length];
                 Reset();
@@ -291,7 +344,8 @@ namespace WplHangman
             spelActief = true;
           
         }
-        //Timers voor spel verloop
+        #endregion
+        #region Timers voor spel verloop
         private void StartTimer()
         {
             spelActief = true;
@@ -303,7 +357,7 @@ namespace WplHangman
             timer.Interval = TimeSpan.FromSeconds(tijd);
             timer.Start();
         }
-        async void  timer_Tick(object sender, EventArgs e)
+        async void timer_Tick(object sender, EventArgs e)
         {
 
             if (timerTickCount == 0)
@@ -313,35 +367,38 @@ namespace WplHangman
                 levens--;
                 //timer.Stop();
 
-                timerTickCount= userTimer;
+                timerTickCount = userTimer;
                 SetBck(true);
             }
             else
             {
-                if (timerTickCount == userTimer) 
+                if (timerTickCount == userTimer)
                 {
                     LblTimer.Content = timerTickCount;
                     timer.Stop();
                     await Task.Delay(1000);
                     timer.Start();
-                   
+
                 }
 
                 timerTickCount--;
-                
+
             }
             LblTimer.Content = timerTickCount;
             PrintLbl();
 
         }
-        //Event als men op Nieuw spel klikt
+        #endregion
+
+        #region Nieuw spel 
         public void BtnNieuw_Click(object sender, RoutedEventArgs e)
         {
 
             StartNieuwSpel();
+            levens = 10;
+            SetImage();
 
         }
-        //Een nieuw spel starten en kijken welke modus het is
         private void StartNieuwSpel()
         {
             MnHint.IsEnabled = false;
@@ -364,16 +421,16 @@ namespace WplHangman
         }
 
         private void VsCpu()
-        {                               
+        {
             ShowObject(BtnVerberg);
             HideObject(BtnRaad);
             BtnVerberg.Content = "Beginnen";
             Lblmasking.Content = "1 VS CPU";
             woord = "";
-           
-            
-           
-          
+
+
+
+
         }
 
         private void Multispeler()
@@ -383,10 +440,13 @@ namespace WplHangman
             BtnVerberg.Content = "Verberg";
             Lblmasking.Content = "1 VS 1";
             woord = "";
-          
+
         }
 
-        //Event als men op Raad knop klikt
+        #endregion
+
+
+        #region Events als men op Raad knop klikt
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
             Raad();
@@ -467,7 +527,8 @@ namespace WplHangman
             }
             
         }
-
+        #endregion
+        #region Het woord maskeren
         private void Masking()
         {
             SetImage();
@@ -489,7 +550,8 @@ namespace WplHangman
                 masking[i] = "*";
             }
         }
-        //Kijken als de ingevoerde letters overeen komen met het woor dat we zoeken
+        #endregion
+        #region Kijken als de ingevoerde letters overeen komen met het woor dat we zoeken
         private bool ControleWoord()
         {
            int ControleWoord = 0;
@@ -505,7 +567,8 @@ namespace WplHangman
             }
             return ControleWoord == woord.Length;               //als het correct geraden is dan geef ik een true terug
         }
-
+        #endregion
+        #region Menu Items
         private void menuAfsluiten(object sender, RoutedEventArgs e)
         {
             this.Close();
@@ -518,22 +581,38 @@ namespace WplHangman
 
         private void menuHigh(object sender, RoutedEventArgs e)
         {
+            var ordered = Punten.OrderByDescending(x => x.score);
+            string print = "";
+            foreach (var score in ordered)
+            {
+                print += $"{score.naam.ToUpper()} - {score.score} Levens ({score.tijd})\n";
+            }
+            MessageBox.Show($"Dit is monmenteel de highscore:\n\n" +
+               $"{print}");
 
+        }
+
+        class HigScore
+        {
+            public string tijd { get; set; }
+            public string naam { get; set; }
+            public int score { get; set; }
         }
 
         private void menuHint(object sender, RoutedEventArgs e)
         {
          
                
-          
+          //een radom char generegren in een do while zolang dat de letters niet in het woord en niet al fout geraden is
                 Random rnd = new Random();
-                char hint = (char)rnd.Next('a', 'z');
+                char hint = ' ';
                 do
                 {
                     hint = (char)rnd.Next('a', 'z');
-                } while (woord.Contains(hint) && fout.Contains(hint));
-                MessageBox.Show($"Hier is je hint:\n{hint}");
-            highscore = false;
+                } while (woord.Contains(hint) || fout.Contains(hint));
+                MessageBox.Show($"Hier is je hint:\n{hint}\n\n Nu geraak je niet meer in de higscore");
+            //Speler komt niet in Highscore
+            TopList = false;
            
            
         }
@@ -559,12 +638,7 @@ namespace WplHangman
                 }
             }
         
-          
-           
-
-        
-
-        private void MenuCpu(object sender, RoutedEventArgs e)
+       private void MenuCpu(object sender, RoutedEventArgs e)
         {
             MnCPU.IsChecked = true;
             MnEen.IsChecked = false;
@@ -588,16 +662,17 @@ namespace WplHangman
             StartNieuwSpel();
 
         }
-
       
         private void TxtInput_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if (spelActief)
             {
-                Raad();
-            }
+                if (e.Key == Key.Enter)
+                {
+                    Raad();
+                }
+            }  
         }
-
-       
+        #endregion
     }
 }
