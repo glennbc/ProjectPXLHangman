@@ -2,20 +2,12 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace WplHangman
@@ -35,10 +27,10 @@ namespace WplHangman
         String fout = "";
         String correct = "";
         int levens = 10;
-        string[]masking = new string [100];
+        string[] masking = new string[100];
         int userTimer = 10;
-        int timerTickCount = 11;
-        int tijd = 1;
+        int timerTickCount = 10;
+        static int tijd = 1;
         //Highscore list
         List<HigScore> Punten = new List<HigScore>();
         //Kan de speler in de highscore komen?
@@ -208,7 +200,7 @@ namespace WplHangman
         #region Fout geraden
         private void Fout()
         {
-            
+
             timer.Stop();
             levens--;
             //timer resetten voor nieuwe letter te raden
@@ -225,6 +217,7 @@ namespace WplHangman
         #region Indien men Verloren heeft
         private void Verloren()
         {
+            MnHint.IsEnabled = false;
             spelActief = false;
             timer.Stop();
             SetImageDOOD();
@@ -234,15 +227,17 @@ namespace WplHangman
             TxtInput.Clear();
             ShowObject(BtnNieuw);
             HideObject(BtnRaad);
-            MnHint.IsEnabled = false;
+
 
         }
 
-       
+
         #endregion
         #region Indien men gewonnen heeft
         private void Gewonnen()
         {
+
+            MnHint.IsEnabled = false;
             timer.Stop();
             timerTickCount = userTimer;
             LblTimer.Content = timerTickCount;
@@ -266,14 +261,14 @@ namespace WplHangman
                 Punten.Add(new HigScore { tijd = DateTime.Now.ToString("HH:mm:ss"), naam = naam, score = levens });
             }
 
-       
+
 
         }
         #endregion
         #region Tekenen mannetje aan de hand van de levens
         private void SetImage()
         {
-            Uri url = new Uri($"Assets/{levens}.png",UriKind.Relative);
+            Uri url = new Uri($"Assets/{levens}.png", UriKind.Relative);
             //IMG aanmaken als een bitmap
             BitmapImage bitmap = new BitmapImage(url);
             // bitmap toevoegen aan WPF
@@ -297,7 +292,7 @@ namespace WplHangman
             correct = "";
             levens = 10;
             SetImage();
-                }
+        }
         #endregion
         #region Lbl printen
         private void PrintLbl()
@@ -364,7 +359,7 @@ namespace WplHangman
             timer.Interval = TimeSpan.FromSeconds(tijd);
             timer.Start();
         }
-        public void timer_Tick(object sender, EventArgs e)
+        async void timer_Tick(object sender, EventArgs e)
         {
 
             if (timerTickCount == 0)
@@ -376,8 +371,8 @@ namespace WplHangman
                 if (levens <= 0)
                 {
                     Verloren();
-                    
-                  
+
+
                 }
                 else
                 {
@@ -385,15 +380,22 @@ namespace WplHangman
                     timer.Start();
                     PrintLbl();
                     SetImage();
-                }    
+                }
                 SetBck(true);
-               }
+            }
             else
             {
                 if (timerTickCount == userTimer)
                 {
                     LblTimer.Content = timerTickCount;
-                
+                    TxtInput.IsEnabled = false;
+                    HideObject(BtnRaad);
+                    timer.Stop();
+                    await Task.Delay(1000);
+                    TxtInput.IsEnabled = true;
+                    ShowObject(BtnRaad);
+                    TxtInput.Focus();
+                    timer.Start();
 
                 }
 
@@ -401,7 +403,7 @@ namespace WplHangman
                 PrintLbl();
             }
             LblTimer.Content = timerTickCount;
-            
+
 
         }
         #endregion
@@ -461,20 +463,74 @@ namespace WplHangman
         }
 
         #endregion
+        #region Hulp
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (spelActief)
+            {
+                timer.Stop();
+                var result = MessageBox.Show("Wil je een hint (YES) of wil je uitleg (NO)?", "Hint/Uileg", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Yes)
+                {
+                    //een radom char generegren in een do while zolang dat de letters niet in het woord en niet al fout geraden is
+                    Random rnd = new Random();
+                    char hint = ' ';
+                    do
+                    {
+                        hint = (char)rnd.Next('a', 'z');
+                    } while (woord.Contains(hint) || fout.Contains(hint));
+                    MessageBox.Show($"Hier is je hint:\n{hint}\n\nDeze hint is een foute letter\n\n Nu geraak je niet meer in de higscore");
+                    fout += hint;
+                    //Speler komt niet in Highscore
+                    TopList = false;
+                }
+                else if (result == MessageBoxResult.No)
+                {
+                    MessageBox.Show($"HELP!!!\n\n" +
+                          $"Hoe speel je het spel?\n" +
+                          $"Je kiest via het menu je spelmodus.\n" +
+                          $"Als je voor 1 VS 1 kiest vul je een woord in het gele vak\n" +
+                          $"Dan klik je op Verberg(1VS1) of Beginnen(1VSCPU).\n\n" +
+                          $"Er is steeds 1 sec dat je moet wachten om te raden." +
+                          $"Indien je een hint wilt kan je deze vragen via het menu of dit vraagteken.\n" +
+                          $"Maar je kan niet in de highscore komen dan.\n\n" +
+                          $"De tijd kan je ook aanpassen via het menu\n\n" +
+                          $"Je vind de highscore terug in het menu.\n\n\n" +
+                          $"SUCCES !!!!");
+                }
+                timerTickCount = userTimer;
 
+                timer.Start();
+            }
+            else
+            {
+                MessageBox.Show($"HELP!!!\n\n" +
+                                         $"Hoe speel je het spel?\n" +
+                                         $"Je kiest via het menu je spelmodus.\n" +
+                                         $"Als je voor 1 VS 1 kiest vul je een woord in het gele vak\n" +
+                                         $"Dan klik je op Verberg(1VS1) of Beginnen(1VSCPU).\n\n" +
+                                         $"Er is steeds 1 sec dat je moet wachten om te raden." +
+                                         $"Indien je een hint wilt kan je deze vragen via het menu of dit vraagteken.\n" +
+                                         $"Maar je kan niet in de highscore komen dan.\n\n" +
+                                         $"De tijd kan je ook aanpassen via het menu\n\n" +
+                                         $"Je vind de highscore terug in het menu.\n\n\n" +
+                                         $"SUCCES !!!!");
+            }
+
+        }
+        #endregion
 
         #region Events als men op Raad knop klikt
         private void BtnRaad_Click(object sender, RoutedEventArgs e)
         {
             Raad();
-            
             spelActief = true;
         }
 
         private void Raad()
         {
             timer.Start();
-          
+
             TxtInput.Focus();
             if (levens > 1)
             {
@@ -511,7 +567,7 @@ namespace WplHangman
                         }
                         if (ControleWoord())
                         {
-                           
+
                             Gewonnen();
                             Masking();
 
@@ -547,7 +603,7 @@ namespace WplHangman
             {
                 Verloren();
             }
-            
+
         }
         #endregion
         #region Het woord maskeren
@@ -558,28 +614,28 @@ namespace WplHangman
             for (int i = 0; i < woord.Length; i++)
             {
                 if (correct.Contains(woord.Substring(i, 1)))
-                {   
+                {
                     masking[i] = woord.Substring(i, 1);
                 }
-                
+
             }
-           
+
         }
         private void FillMasking()
         {
             for (int i = 0; i < woord.Length; i++)
             {
-                masking[i] = "*";
+                masking[i] = " __ ";
             }
         }
         #endregion
         #region Kijken als de ingevoerde letters overeen komen met het woor dat we zoeken
         private bool ControleWoord()
         {
-           int ControleWoord = 0;
+            int ControleWoord = 0;
             for (int i = 0; i < woord.Length; i++)
             {
-                if (correct.Contains(woord.Substring(i,1)))
+                if (correct.Contains(woord.Substring(i, 1)))
                 {    //Letter per letter kijken als deze in correct zit
 
                     ControleWoord++;                            //Als de letter overeenkomt dan tel ik hier 1 bij 
@@ -625,8 +681,6 @@ namespace WplHangman
         {
 
             Hint();
-           
-           
         }
 
         private void Hint()
@@ -648,26 +702,24 @@ namespace WplHangman
 
         private void menuTimer(object sender, RoutedEventArgs e)
         {
-           
-             
-                if (!int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef tijd van de timer"), out userTimer))
+
+            bool isGetal;
+            do
+            {
+                do
                 {
-                    int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef tijd van de timer in gehele getallen"), out userTimer);
-                }
-                else
-                {
-                    if (userTimer < 5 || userTimer > 20)
-                    {
-                        int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef een tijd in groter dan 5 en kleiner dan 20"), out userTimer);
-                    }
-                    else
-                    {
-                        timerTickCount = userTimer;
-                    }
-                }
-            }
-        
-       private void MenuCpu(object sender, RoutedEventArgs e)
+                    isGetal = int.TryParse(Microsoft.VisualBasic.Interaction.InputBox("Geef een tijd in groter dan 5 en kleiner dan 20"), out userTimer);
+                } while (userTimer < 5 || userTimer > 20);
+
+                timerTickCount = userTimer;
+                break;
+
+            } while (!isGetal);
+
+
+        }
+
+        private void MenuCpu(object sender, RoutedEventArgs e)
         {
             MnCPU.IsChecked = true;
             MnEen.IsChecked = false;
@@ -686,12 +738,12 @@ namespace WplHangman
             ShowObject(BtnVerberg);
             HideObject(BtnRaad);
             Lblmasking.Content = "1 VS 1";
-      
+
 
             StartNieuwSpel();
 
         }
-      
+
         private void TxtInput_KeyDown(object sender, KeyEventArgs e)
         {
             if (spelActief)
@@ -711,7 +763,8 @@ namespace WplHangman
                     }
                     else
                     {
-                        StartNieuwSpel();                    }
+                        StartNieuwSpel();
+                    }
                 }
             }
         }
@@ -719,57 +772,6 @@ namespace WplHangman
 
 
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            if (spelActief)
-            {
-                timer.Stop();
-               var result = MessageBox.Show("Wil je een hint (YES) of wil je uitleg (NO)?", "Hint/Uileg", MessageBoxButton.YesNoCancel);
-                if (result == MessageBoxResult.Yes)
-                {
-                    //een radom char generegren in een do while zolang dat de letters niet in het woord en niet al fout geraden is
-                    Random rnd = new Random();
-                    char hint = ' ';
-                    do
-                    {
-                        hint = (char)rnd.Next('a', 'z');
-                    } while (woord.Contains(hint) || fout.Contains(hint));
-                    MessageBox.Show($"Hier is je hint:\n{hint}\n\nDeze hint is een foute letter\n\n Nu geraak je niet meer in de higscore");
-                    fout += hint;
-                    //Speler komt niet in Highscore
-                    TopList = false;
-                }
-                else if (result == MessageBoxResult.No)
-                {
-                    MessageBox.Show($"HELP!!!\n\n" +
-                          $"Hoe speel je het spel?\n" +
-                          $"Je kiest via het menu je spelmodus.\n" +
-                          $"Als je voor 1 VS 1 kiest vul je een woord in het gele vak\n" +
-                          $"Dan klik je op Verberg(1VS1) of Beginnen(1VSCPU).\n\n" +
-                          $"Indien je een hint wilt kan je deze vragen via het menu of dit vraagteken.\n" +
-                          $"Maar je kan niet in de highscore komen dan.\n\n" +
-                          $"De tijd kan je ook aanpassen via het menu\n\n" +
-                          $"Je vind de highscore terug in het menu.\n\n\n" +
-                          $"SUCCES !!!!");
-                }
-                timerTickCount = userTimer;
-              
-                timer.Start();
-            }
-            else
-            {
 
-                MessageBox.Show($"HELP!!!\n\n" +
-                           $"Hoe speel je het spel?\n" +
-                           $"Je kiest via het menu je spelmodus.\n" +
-                           $"Als je voor 1 VS 1 kiest vul je een woord in het gele vak\n" +
-                           $"Dan klik je op Verberg(1VS1) of Beginnen(1VSCPU).\n\n" +
-                           $"Indien je een hint wilt kan je deze vragen via het menu.\n" +
-                           $"Maar je kan niet in de highscore komen dan.\n\n" +
-                           $"Je vind de highscore terug in het menu.\n\n\n" +
-                           $"SUCCES !!!!");
-            }
-            
-        }
     }
 }
