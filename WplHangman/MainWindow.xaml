@@ -142,7 +142,7 @@
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
-
+                        
 
                     </WrapPanel>
                     <WrapPanel Margin="10,70,0,0" Height="190" >
@@ -160,7 +160,15 @@
                     </WrapPanel>
 
                 </StackPanel>
-
+                <Button  Click="Button_Click">
+                    <Button.Template>
+                        <ControlTemplate>
+                            <Image Width="60" Margin="1180,-248,10,248" Source="Assets/hulp.png" Panel.ZIndex="0"  Opacity="0.5"></Image>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                
+                
             </Grid>
         </Viewbox>
     </UserControl>

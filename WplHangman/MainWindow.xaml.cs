@@ -158,9 +158,8 @@ namespace WplHangman
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // default uitzicht creeeren als app laad
-            HideObject(BtnRaad);
-            ShowObject(BtnNieuw);
             HideObject(BtnVerberg);
+            HideObject(BtnNieuw);
             SetImage();
             SetBck(true);
             //Het spel is nog niet bezif
@@ -169,6 +168,7 @@ namespace WplHangman
             MnCPU.IsChecked = true;
             //Spel starten voor CPU gebruiker moet eerst op verberg/beginnen klikken
             StartNieuwSpel();
+            TxtInput.Focus();
         }
         #endregion
         #region achtergrond zetten standaard en als fout is.
@@ -225,6 +225,7 @@ namespace WplHangman
         #region Indien men Verloren heeft
         private void Verloren()
         {
+            spelActief = false;
             timer.Stop();
             SetImageDOOD();
             MessageBox.Show("Je bent opgehangen");
@@ -233,7 +234,8 @@ namespace WplHangman
             TxtInput.Clear();
             ShowObject(BtnNieuw);
             HideObject(BtnRaad);
-            spelActief = false;
+            MnHint.IsEnabled = false;
+
         }
 
        
@@ -241,9 +243,9 @@ namespace WplHangman
         #region Indien men gewonnen heeft
         private void Gewonnen()
         {
+            timer.Stop();
             timerTickCount = userTimer;
             LblTimer.Content = timerTickCount;
-            timer.Stop();
             SetImage();
             LblText.Content = "Dank U voor het spelen\n";
             LblText.Content += $"Het woord dat wij zochten was: \n\n{woord}";
@@ -300,15 +302,20 @@ namespace WplHangman
         #region Lbl printen
         private void PrintLbl()
         {
-            LblText.Content = "Gelieven een woord of een letter in te geven in het gele vak\nDruk dan op raad\n\n";
-            LblText.Content += $"U heeft op dit moment {levens} Leven(s)\n\n";
-            LblText.Content += $"Correct gerade letters: {correct}\n";
-            LblText.Content += $"Fout gerade letters: {fout}";
+            LblText.Content = "Vul een letter of woord in het gele vak\nDruk dan op ENTER of Raad\n\n";
+            LblText.Content += $"Je hebt nog {levens} Leven(s)\n\n";
+            LblText.Content += $"Juiste letters: {correct}\n";
+            LblText.Content += $"Foute letters: {fout}";
             Lblmasking.Content = string.Join("", masking);
         }
         #endregion
         #region Event als men op Verberg/begin knop klikt
         private void BtnVerberg_Click(object sender, RoutedEventArgs e)
+        {
+            VerbergBegin();
+        }
+
+        private void VerbergBegin()
         {
             // speler mag in highscore komen
             TopList = true;
@@ -321,17 +328,17 @@ namespace WplHangman
                 masking = new string[woord.Length];
                 Reset();
                 Masking();
-                
+
 
             }
             else
             {
-               // 1 VS 1
+                // 1 VS 1
                 woord = TxtInput.Text.ToLower();
                 masking = new string[woord.Length];
                 Reset();
                 Masking();
-                
+
             }
             SetImage();
             Reset();
@@ -342,7 +349,7 @@ namespace WplHangman
             MnHint.IsEnabled = true;
             mntimer.IsEnabled = false;
             spelActief = true;
-          
+
         }
         #endregion
         #region Timers voor spel verloop
@@ -357,35 +364,44 @@ namespace WplHangman
             timer.Interval = TimeSpan.FromSeconds(tijd);
             timer.Start();
         }
-        async void timer_Tick(object sender, EventArgs e)
+        public void timer_Tick(object sender, EventArgs e)
         {
 
             if (timerTickCount == 0)
             {
+                timer.Stop();
                 SetBck(false);
-                MessageBox.Show("Tijd is op!");
+                MessageBox.Show("Je tijd is op!");
                 levens--;
-                //timer.Stop();
-
-                timerTickCount = userTimer;
+                if (levens <= 0)
+                {
+                    Verloren();
+                    
+                  
+                }
+                else
+                {
+                    timerTickCount = userTimer;
+                    timer.Start();
+                    PrintLbl();
+                    SetImage();
+                }    
                 SetBck(true);
-            }
+               }
             else
             {
                 if (timerTickCount == userTimer)
                 {
                     LblTimer.Content = timerTickCount;
-                    timer.Stop();
-                    await Task.Delay(1000);
-                    timer.Start();
+                
 
                 }
 
                 timerTickCount--;
-
+                PrintLbl();
             }
             LblTimer.Content = timerTickCount;
-            PrintLbl();
+            
 
         }
         #endregion
@@ -403,6 +419,7 @@ namespace WplHangman
         {
             MnHint.IsEnabled = false;
             mntimer.IsEnabled = true;
+            HideObject(BtnNieuw);
             if (spelActief)
             {
                 timer.Stop();
@@ -410,12 +427,12 @@ namespace WplHangman
             if (spelModus)
             {
                 VsCpu();
-                LblText.Content = $"1 VS CPU \n \nKlik op nieuw spel om te starten.\nJe kan ook de spelmodus aan passen in het menu.\n\nKlik op beginnen\nVul daarna een woord of letter in het gele vak en klik dan op raad.";
+                LblText.Content = $"1 VS CPU \n \nHier ga je tegen de computer woorden raden.\n\nKlik op beginnen om te starten.";
             }
             else
             {
                 Multispeler();
-                LblText.Content = $"1 VS 1 \n \nKlik op nieuw spel om te starten.\nJe kan ook de spelmodus aan passen in het menu.\n\nVul een woord in het gele vak en druk op verberg.\nVul daarna een woord of letter in het gele vak en klik dan op raad.";
+                LblText.Content = $"1 VS 1 \n \nHier speel je tegen je vriend/vijand.\n\nVul een woord in en drukt dan op verbergen.";
 
             }
         }
@@ -464,10 +481,11 @@ namespace WplHangman
                 if (fout.Contains(TxtInput.Text.ToLower()) || correct.Contains(TxtInput.Text.ToLower()))
                 {
 
-                    timerTickCount = userTimer;
                     timer.Stop();
-                    MessageBox.Show($"U heeft lettertje {TxtInput.Text} al ingegeven.");
+                    MessageBox.Show($"Je hebt lettertje {TxtInput.Text} al ingegeven.");
                     TxtInput.Clear();
+                    timerTickCount = userTimer;
+                    timer.Start();
 
                 }
                 else
@@ -478,10 +496,11 @@ namespace WplHangman
                     {
                         if (woord.Contains(TxtInput.Text.ToLower()))
                         {
+                            timer.Stop();
                             correct += TxtInput.Text.ToLower();
                             Masking();
                             timerTickCount = userTimer;
-                            timer.Stop();
+                            timer.Start();
                         }
                         else
                         {
@@ -492,6 +511,7 @@ namespace WplHangman
                         }
                         if (ControleWoord())
                         {
+                           
                             Gewonnen();
                             Masking();
 
@@ -502,12 +522,14 @@ namespace WplHangman
                             PrintLbl();
                             TxtInput.Clear();
                             timerTickCount = userTimer;
+
                         }
                     }
                     else
                     {
                         if (TxtInput.Text.ToLower() == woord)
                         {
+                            timer.Stop();
                             Masking();
                             Gewonnen();
                         }
@@ -601,20 +623,27 @@ namespace WplHangman
 
         private void menuHint(object sender, RoutedEventArgs e)
         {
-         
-               
-          //een radom char generegren in een do while zolang dat de letters niet in het woord en niet al fout geraden is
-                Random rnd = new Random();
-                char hint = ' ';
-                do
-                {
-                    hint = (char)rnd.Next('a', 'z');
-                } while (woord.Contains(hint) || fout.Contains(hint));
-                MessageBox.Show($"Hier is je hint:\n{hint}\n\n Nu geraak je niet meer in de higscore");
+
+            Hint();
+           
+           
+        }
+
+        private void Hint()
+        {
+            timer.Stop();
+            //een radom char generegren in een do while zolang dat de letters niet in het woord en niet al fout geraden is
+            Random rnd = new Random();
+            char hint = ' ';
+            do
+            {
+                hint = (char)rnd.Next('a', 'z');
+            } while (woord.Contains(hint) || fout.Contains(hint));
+            MessageBox.Show($"Hier is je hint:\n{hint}\n\nDeze hint is een foute letter\n\nNu geraak je niet meer in de higscore :(");
+            fout += hint;
             //Speler komt niet in Highscore
             TopList = false;
-           
-           
+            timer.Start();
         }
 
         private void menuTimer(object sender, RoutedEventArgs e)
@@ -671,8 +700,76 @@ namespace WplHangman
                 {
                     Raad();
                 }
-            }  
+            }
+            else
+            {
+                if (e.Key == Key.Enter)
+                {
+                    if (BtnVerberg.Visibility == Visibility.Visible)
+                    {
+                        VerbergBegin();
+                    }
+                    else
+                    {
+                        StartNieuwSpel();                    }
+                }
+            }
         }
         #endregion
+
+
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (spelActief)
+            {
+                timer.Stop();
+               var result = MessageBox.Show("Wil je een hint (YES) of wil je uitleg (NO)?", "Hint/Uileg", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Yes)
+                {
+                    //een radom char generegren in een do while zolang dat de letters niet in het woord en niet al fout geraden is
+                    Random rnd = new Random();
+                    char hint = ' ';
+                    do
+                    {
+                        hint = (char)rnd.Next('a', 'z');
+                    } while (woord.Contains(hint) || fout.Contains(hint));
+                    MessageBox.Show($"Hier is je hint:\n{hint}\n\nDeze hint is een foute letter\n\n Nu geraak je niet meer in de higscore");
+                    fout += hint;
+                    //Speler komt niet in Highscore
+                    TopList = false;
+                }
+                else if (result == MessageBoxResult.No)
+                {
+                    MessageBox.Show($"HELP!!!\n\n" +
+                          $"Hoe speel je het spel?\n" +
+                          $"Je kiest via het menu je spelmodus.\n" +
+                          $"Als je voor 1 VS 1 kiest vul je een woord in het gele vak\n" +
+                          $"Dan klik je op Verberg(1VS1) of Beginnen(1VSCPU).\n\n" +
+                          $"Indien je een hint wilt kan je deze vragen via het menu of dit vraagteken.\n" +
+                          $"Maar je kan niet in de highscore komen dan.\n\n" +
+                          $"De tijd kan je ook aanpassen via het menu\n\n" +
+                          $"Je vind de highscore terug in het menu.\n\n\n" +
+                          $"SUCCES !!!!");
+                }
+                timerTickCount = userTimer;
+              
+                timer.Start();
+            }
+            else
+            {
+
+                MessageBox.Show($"HELP!!!\n\n" +
+                           $"Hoe speel je het spel?\n" +
+                           $"Je kiest via het menu je spelmodus.\n" +
+                           $"Als je voor 1 VS 1 kiest vul je een woord in het gele vak\n" +
+                           $"Dan klik je op Verberg(1VS1) of Beginnen(1VSCPU).\n\n" +
+                           $"Indien je een hint wilt kan je deze vragen via het menu.\n" +
+                           $"Maar je kan niet in de highscore komen dan.\n\n" +
+                           $"Je vind de highscore terug in het menu.\n\n\n" +
+                           $"SUCCES !!!!");
+            }
+            
+        }
     }
 }
