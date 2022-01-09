@@ -161,6 +161,17 @@ namespace WplHangman
             //Spel starten voor CPU gebruiker moet eerst op verberg/beginnen klikken
             StartNieuwSpel();
             TxtInput.Focus();
+            MessageBox.Show($"INFO!!!\n\n" +
+                                         $"Hoe speel je het spel?\n" +
+                                         $"Je kiest via het menu je spelmodus.\n" +
+                                         $"Als je voor 1 VS 1 kiest vul je een woord in het gele vak\n" +
+                                         $"Dan klik je op Verberg(1VS1) of Beginnen(1VSCPU).\n\n" +
+                                         $"Er is steeds 1 sec dat je moet wachten om te raden." +
+                                         $"Indien je een hint wilt kan je deze vragen via het menu of dit vraagteken.\n" +
+                                         $"Maar je kan niet in de highscore komen dan.\n\n" +
+                                         $"De tijd kan je ook aanpassen via het menu\n\n" +
+                                         $"Je vind de highscore terug in het menu.\n\n\n" +
+                                         $"SUCCES !!!!");
         }
         #endregion
         #region achtergrond zetten standaard en als fout is.
